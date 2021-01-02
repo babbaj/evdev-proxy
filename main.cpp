@@ -111,6 +111,7 @@ int main() {
     libevdev_grab(kb_dev, LIBEVDEV_GRAB);
     sleep(3);
 
+    // pretty sure I don't need multiple threads with O_NONBLOCK
     std::thread kb_thread([&] {
         int err = 0;
         do {
@@ -128,11 +129,11 @@ int main() {
             input_event ev{};
             err = libevdev_next_event(mouse_dev, LIBEVDEV_READ_FLAG_NORMAL, &ev);
             if (err == 0) {
-                if (ev.type == EV_KEY && ev.code == KEY_RIGHTALT && ev.value == 1) {
+                // that weird key to the right of space bar
+                if (ev.type == EV_KEY && ev.code == KEY_COMPOSE && ev.value == 1) {
                     press_combo(proxy.fd);
                     //puts("sent combo");
                 }
-                // let it go through to make sure we don't mess anything up
                 err = libevdev_uinput_write_event(proxy.uidev, ev.type, ev.code, ev.value);
             }
 
