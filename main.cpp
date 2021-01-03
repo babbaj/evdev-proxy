@@ -1,4 +1,3 @@
-#include <iostream>
 #include <cstring>
 #include <thread>
 
@@ -25,7 +24,7 @@ int emit(int fd, int type, int code, int val)
 
 void press_combo(int fd) {
 
-    // press down
+    // press down (possibly unnecessary)
     emit(fd, EV_KEY, KEY_LEFTCTRL, 1);
     emit(fd, EV_SYN, SYN_REPORT, 0);
     emit(fd, EV_KEY, KEY_RIGHTCTRL, 1);
@@ -54,7 +53,7 @@ Device create_proxy(libevdev* kb_dev, int kb_fd) {
 
     const int ui_fd = open("/dev/uinput", O_WRONLY | O_NONBLOCK);
     if (ui_fd < 0) {
-        printf("open error (%s)\n", strerror(-errno));
+        printf("open error (%s)\n", strerror(errno));
         exit(1);
     }
 
@@ -73,12 +72,12 @@ Device create_proxy(libevdev* kb_dev, int kb_fd) {
 }
 
 int main() {
-    const int kb_fd = open("/dev/input/by-id/usb-Logitech_USB_Keyboard-event-kbd", O_RDONLY|O_NONBLOCK);
+    const int kb_fd = open("/dev/input/by-id/usb-Logitech_USB_Keyboard-event-kbd", O_RDONLY);
     if (kb_fd < 0) {
         printf("Failed to open keyboard device (%s)\n", strerror(errno));
         exit(1);
     }
-    const int mouse_fd = open("/dev/input/by-id/usb-Logitech_G203_LIGHTSYNC_Gaming_Mouse_206B37804B42-if01-event-kbd", O_RDONLY|O_NONBLOCK);
+    const int mouse_fd = open("/dev/input/by-id/usb-Logitech_G203_LIGHTSYNC_Gaming_Mouse_206B37804B42-if01-event-kbd", O_RDONLY);
     if (mouse_fd < 0) {
         printf("Failed to open mouse device (%s)\n", strerror(errno));
         exit(1);
@@ -130,11 +129,14 @@ int main() {
             err = libevdev_next_event(mouse_dev, LIBEVDEV_READ_FLAG_NORMAL, &ev);
             if (err == 0) {
                 // that weird key to the right of space bar
-                if (ev.type == EV_KEY && ev.code == KEY_COMPOSE && ev.value == 1) {
-                    press_combo(proxy.fd);
-                    //puts("sent combo");
+                if (ev.type == EV_KEY && ev.code == KEY_COMPOSE) {
+                    if (ev.value == 1) {
+                        press_combo(proxy.fd);
+                        //puts("sent combo");
+                    }
+                } else {
+                    err = libevdev_uinput_write_event(proxy.uidev, ev.type, ev.code, ev.value);
                 }
-                err = libevdev_uinput_write_event(proxy.uidev, ev.type, ev.code, ev.value);
             }
 
         } while (err == 1 || err == 0 || err == -EAGAIN);
