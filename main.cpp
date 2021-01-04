@@ -148,6 +148,7 @@ int main() {
     // this gets done anyways when the process exits
     ioctl(proxy.fd, UI_DEV_DESTROY);
     close(proxy.fd);
+    libevdev_grab(kb_dev, LIBEVDEV_UNGRAB);
     close(kb_fd);
     close(mouse_fd);
     libevdev_free(mouse_dev);
