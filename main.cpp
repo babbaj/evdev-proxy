@@ -101,9 +101,10 @@ int main() {
     const char* path = libevdev_uinput_get_devnode(proxy.uidev);
     printf("Path = %s\n", path);
     constexpr auto symlink_path = "/dev/input/by-id/cute-kbd";
+    remove(symlink_path);
     if (symlink(path, symlink_path) < 0) {
         printf("Failed to create symlink (%d), (%s)\n", errno, strerror(errno));
-        //exit(1);
+        exit(1);
     }
 
     puts("grabbing keyboard");
