@@ -147,8 +147,7 @@ int main() {
     mouse_thread.join();
 
     // this gets done anyways when the process exits
-    ioctl(proxy.fd, UI_DEV_DESTROY);
-    close(proxy.fd);
+    libevdev_uinput_destroy(proxy.uidev);
     libevdev_grab(kb_dev, LIBEVDEV_UNGRAB);
     close(kb_fd);
     close(mouse_fd);
