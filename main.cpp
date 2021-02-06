@@ -116,7 +116,7 @@ int main() {
         int err = 0;
         do {
             input_event ev{};
-            err = libevdev_next_event(kb_dev, LIBEVDEV_READ_FLAG_NORMAL, &ev);
+            err = libevdev_next_event(kb_dev, LIBEVDEV_READ_FLAG_NORMAL | LIBEVDEV_READ_FLAG_BLOCKING, &ev);
             if (err == 0) {
                 err = libevdev_uinput_write_event(proxy.uidev, ev.type, ev.code, ev.value);
             }
@@ -127,7 +127,7 @@ int main() {
         int err = 0;
         do {
             input_event ev{};
-            err = libevdev_next_event(mouse_dev, LIBEVDEV_READ_FLAG_NORMAL, &ev);
+            err = libevdev_next_event(mouse_dev, LIBEVDEV_READ_FLAG_FORCE_SYNC | LIBEVDEV_READ_FLAG_BLOCKING, &ev);
             if (err == 0) {
                 // that weird key to the right of space bar
                 if (ev.type == EV_KEY && ev.code == KEY_COMPOSE) {
@@ -139,7 +139,6 @@ int main() {
                     err = libevdev_uinput_write_event(proxy.uidev, ev.type, ev.code, ev.value);
                 }
             }
-
         } while (err == 1 || err == 0 || err == -EAGAIN);
     });
 
